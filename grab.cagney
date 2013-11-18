@@ -1,0 +1,18 @@
+#!/bin/sh
+cd $HOME
+cd personal/cagney
+$HOME/bin/ncftp ftp.wwwdesign.co.uk:/tmp/account.tgz
+$HOME/bin/ncftp ftp.wwwdesign.co.uk:/home/tech/neuro/meg.tgz
+
+DATE=`date`
+
+cat << EOM >> /tmp/tmp.tmp.$$
+owdy
+
+i appear to have finished at $DATE
+
+--
+neuro
+EOM
+mail -s "grab.cagney says ..." neuro < /tmp/tmp.tmp.$$
+rm /tmp/tmp.tmp.$$

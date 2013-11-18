@@ -1,0 +1,7 @@
+cd /home
+echo This is a test > /tmp/use
+echo >> /tmp/use
+du -s users/* meisters/* guests/* | grep -v quota | grep -v lost+fou | sort -rn >> /tmp/use
+#mail -s"Disk usage w/ending `date | cut -b-20`" gurus < /tmp/use
+less /tmp/use
+rm /tmp/use

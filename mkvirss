@@ -1,0 +1,8 @@
+#!/bin/sh
+
+exit 0
+
+cd /home/neuro/host/neuro.me.uk/blogsupport
+ 
+curl -s "http://videoisland.com/user/rss.php?what=current&uid=17665" > vi.rss
+# curl -s "http://videoisland.com/user/rss.php?what=current&uid=17665" | tail +5 > vi.rss

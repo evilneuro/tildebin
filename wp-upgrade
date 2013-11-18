@@ -1,0 +1,8 @@
+# !/bin/bash
+
+cd ~/host/neuro.me.uk/
+for i in wp-svn/*; do rm `basename $i`; done
+cp wp-local/wp-config.php .
+ln wp-local/* .
+ln wp-svn/* .
+ln -s wp-svn/* .

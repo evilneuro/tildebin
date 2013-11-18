@@ -1,0 +1,18 @@
+#!/bin/sh
+
+CAMDATE=`date +"%Y%m%d%H%M"`
+CAMDIR=`date +"%Y/%m/%d"`
+CAMFILE=$CAMDIR/$CAMDATE.jpg
+
+cd ~neuro/Projects//webcams
+
+for CAMLIST in glasgow/buchananst1 glasgow/georgesq1 glasgow/georgesq2 glasgow/unionst1
+do
+	mkdir -p $CAMLIST/$CAMDIR
+done
+
+# wget -q --timeout=60 -O glasgow/harbour1/$CAMFILE http://marcus.axiscam.net/jpg/image.jpg
+wget -q --timeout=60 -O glasgow/buchananst1/$CAMFILE http://cameras.camvista.com/webcams/buchananst.jpg
+wget -q --timeout=60 -O glasgow/georgesq1/$CAMFILE http://www.glasgowcitycouncil.co.uk/webcam/fullsize.jpg
+wget -q --timeout=60 -O glasgow/georgesq2/$CAMFILE http://www.glasgowcitycouncil.co.uk/newcam/fullsize.jpg
+wget -q --timeout=60 -O glasgow/unionst1/$CAMFILE http://liveimages.networkwebcams.co.uk/tb_forrestgroup01.jpg

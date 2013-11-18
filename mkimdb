@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd /store/tmp/imdb
+rsync -avcrlHptSoz --delete-excluded --exclude=diffs \
+	rsync://ftp.sunet.se/pub/tv+movies/imdb/ .

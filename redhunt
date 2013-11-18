@@ -1,0 +1,25 @@
+#!/bin/sh
+
+NUM=`wc -l ~neuro/logfiles | cut -d/ -f1`
+NUM=`expr $NUM`
+COUNTER=0
+
+while [ $COUNTER -lt $NUM ]
+do
+        echo -n ":"
+        COUNTER=`expr $COUNTER + 1`
+        LOGFILE=`cat ~neuro/logfiles | head -$COUNTER | tail -1`
+        echo -n .
+        IDACOUNT=`cat $LOGFILE | grep default.ida | wc -l`
+        echo -n .
+        CMDCOUNT=`cat $LOGFILE | grep cmd.exe | wc -l`
+        echo -n .
+        ROOTCOUNT=`cat $LOGFILE | grep root.exe | wc -l`
+        echo -n ". "
+        echo "$LOGFILE  "
+        echo -n "ida - $IDACOUNT        "
+        echo -n "cmd - $CMDCOUNT        "
+        echo -n "root - $ROOTCOUNT      "
+        echo
+done
+

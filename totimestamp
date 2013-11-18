@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+use Time::Local;
+use Date::Manip;
+
+$timestamp = shift;
+
+print UnixDate($timestamp,"%s") . "\n";

@@ -1,0 +1,28 @@
+#!/bin/sh
+# @(#)switch.logos	1.0.3 96/01/26
+# * Copyright (c) 1996 William Anderson
+# *
+# * Purpose:
+# * to be run by a system agent (i.e.; cron) and switch files
+# * according to a pre-arranged number scheme.
+#
+ROOT=/usr/local/httpd/htdocs/img
+COUNT_FILE=$ROOT/switch/count_file
+CEILING_FILE=$ROOT/switch/count_ceiling
+
+NUMBER=`cat $COUNT_FILE`
+#echo NUMBER=$NUMBER
+NEW_NUMBER=`expr $NUMBER + 1`
+#echo NEW_NUMBER=$NEW_NUMBER
+CURRENT_CEILING=`cat $CEILING_FILE`
+#echo CURRENT_CEILING=$CURRENT_CEILING
+
+if [ $NEW_NUMBER -gt $CURRENT_CEILING ]
+then
+	NEW_NUMBER=1
+fi
+
+rm $ROOT/logo.gif
+ln -s $ROOT/switch/logo.$NEW_NUMBER.gif $ROOT/logo.gif
+
+echo $NEW_NUMBER > $COUNT_FILE

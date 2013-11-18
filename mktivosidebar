@@ -1,0 +1,12 @@
+#!/bin/sh
+
+cd /home/neuro/host/neuro.me.uk/common/inc
+cat ../../blogsupport/blog.righthand.top > /tmp/blog.righthand.$$
+/home/neuro/bin/gettivo
+cat ../../blogsupport/showlist >> /tmp/blog.righthand.$$
+cat ../../blogsupport/blog.righthand.bottom >> /tmp/blog.righthand.$$
+cat /tmp/blog.righthand.$$ > blog.righthand.inc
+rm /tmp/blog.righthand.$$
+
+# cd /home/neuro/host/neuro.me.uk
+# echo `grep "#comment" blog/archives/000391.html | cut -d"#" -f2 | cut -d\" -f1 | grep -v comments | tail -1` > blogsupport/

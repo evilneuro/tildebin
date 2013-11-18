@@ -1,0 +1,10 @@
+#!/bin/sh
+
+cd /store/mp3/
+
+/store/tmp/mp3report-1.0.2/mp3report.pl --title="neuro's ridiculous mp3 collection" --outfile=/store/mp3/collection.html /store/mp3/
+tidy -asxhtml -mq -f collection.errors collection.html
+cd playlists
+find | grep m3u > /tmp/playlists.$$.txt
+cat /tmp/playlists.$$.txt | sort > /store/mp3/playlists.txt
+rm /tmp/playlists.$$.txt

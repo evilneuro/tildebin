@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# wget -nc -q -O - "http://minkutils.zensoft.net/feeds/bleep/index.php?force_update=1" >/dev/null
+wget -nc -q -O - "http://neuro.me.uk/portal/feeds/index.php?force_update=1" >/dev/null

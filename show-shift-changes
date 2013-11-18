@@ -1,0 +1,47 @@
+#!/bin/bash
+# 
+# show the last 7 days of neuro's shift changes by interrogating the
+# topic changes in the #support irc channel
+
+if [ "`hostname`" != "cochrane" ] 
+then
+	echo "`basename $0`: running on wrong machine"
+	exit 1
+fi
+
+if [ ! -d ~/svn/neuro/scripts ]
+then
+	echo "`basename $0`: no svn checkout"
+	exit 1
+fi
+
+if [ -d ~/logs/irssi/LindenLab/\#support ]
+then
+	cd ~/logs/irssi/LindenLab/\#support
+else
+	echo "`basename $0`: can't find irssi log dir"
+	exit 1
+fi
+
+TODAY_TS=`~/svn/neuro/scripts/totimestamp "\`date\`"`
+# LASTW_TS=`expr $TODAY_TS - 604800`
+LASTW_TS=`expr $TODAY_TS - 877600`
+LAST_WEEK=`~/svn/neuro/scripts/fromtimestamp $LASTW_TS`
+DATE_MATCH=`date +"%Y%m%d" --date="$LAST_WEEK"`
+
+COUNTER=`ls -1 | grep -n $DATE_MATCH | cut -d: -f1`
+DAY_MATCH=no
+while [ $COUNTER -lt `ls -1 | wc -l` ]
+do
+	COUNTER=`expr $COUNTER + 1`
+	LINE_MATCH=`grep -H "< neuro> topic" \`ls -1 | tail -n "+$COUNTER" | head -1\` | grep -i "Neuro \[DNOC\]"`
+	if [ "$LINE_MATCH" != "" ]
+	then
+		# THIS_DATE=`echo $LINE_MATCH | cut -d. -f1`
+		# if [ "$DAY_MATCH" == "no" ]
+		# then
+		# 	if [ "`date --date=$THIS_DATE +"%a"`" == "
+		# fi
+		echo $LINE_MATCH | sed 's/\.log//g'
+	fi
+done

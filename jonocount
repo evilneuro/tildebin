@@ -1,0 +1,12 @@
+# !/bin/bash
+
+if [ "$1" == "--top10" ]
+then 
+	RENDER="sort | uniq -c | sort -nr | head -n 10"
+	SEARCH=$2
+else
+	RENDER="wc -l"
+	SEARCH=$1
+fi
+
+lynx -dump ~/Downloads/jonobacon-theartofcommunity-1eds.html  | grep -v "file://" | strings | tr ' ' '\n' | tr ',' '\n' | tr '.' '\n' | grep -v http | grep -iw $SEARCH | $RENDER

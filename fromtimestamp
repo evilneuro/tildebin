@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+
+use Time::Local;
+use POSIX qw(strftime);
+
+$timestamp = shift;
+
+print strftime("%Y-%m-%d %H:%M:%S", gmtime($timestamp)) . "\n";

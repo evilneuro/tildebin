@@ -1,0 +1,147 @@
+#!/usr/bin/perl
+
+# get tivo
+# Grabs TiVo now playing from TiVo web and converts to list for inclusion on web page
+# By Richard Smith
+# Placed in the public domain, but credit and linkage to www.chatbear.com is always nice :)
+
+use LWP::Simple;
+use POSIX qw(strftime);
+
+my $thedate = strftime("%Y-%m-%d %H:%M %Z",localtime(time()));
+
+$page = get("http://192.168.2.8/nowshowing") || die &leave();
+
+($mainblock) = $page =~ /<TABLE border=0 cellspacing=0 cellpadding=0 >(.*?)<\/TABLE>/sig;
+@shows = $mainblock =~ /<TR >(.*?)<\/TR>/sig;
+
+open(OUT, ">/home/neuro/host/neuro.me.uk/blogsupport/showlist");
+
+foreach $show (@shows) {
+	@columns = $show =~ /<TD>(.*?)<\/TD>/sig;
+	
+	# Status
+	if ($columns[0] eq "&nbsp;") {
+		$status = "New";
+	} elsif ($columns[0] =~ /ExpireNever/) {
+		$status = "Never Delete";
+	} elsif ($columns[0] =~ /Recording/) {
+		$status = "Recording";
+	} elsif ($columns[0] =~ /Suggest/) {
+		$status = "Suggestion";
+	} elsif ($columns[0] =~ /Expired/) {
+		$status = "Expired";
+	} else {
+		$status = "";
+	}
+
+	$status = lc($status);
+	
+	# Show Name
+	$columns[1] =~ s/<.*?>//g;
+	$showname = $columns[1];
+	
+	# Description
+	($description) = $columns[2] =~ /A title="(.*?)"/i;
+	
+	# Episode Name
+	$columns[2] =~ s/<.*?>//g;
+	$episodename = $columns[2];
+	if ( $episodename eq "No Episode Title" || $episodename eq "Not an Episode" ) {
+		$episodename = ""; 
+	} else { 
+		$episodename = "&mdash; \"$episodename\""; 
+	}
+	
+	# Day
+	$columns[3] =~ s/<.*?>//g;
+	$day = lc($columns[3]);
+	
+	# Date
+	$columns[4] =~ s/<.*?>//g;
+	$date = lc($columns[4]);
+	$date =~ s/^\s+//g;
+
+	$fulldesc = $description;
+	if (length($description) > 50) {
+		$description = substr($description, 0, 50) . "...";
+	}
+	
+	print OUT qq|<em>$showname</em> $episodename ($day $date|;
+	if ( $status ne "" ) { print OUT qq|, $status|; }
+	print OUT qq|)<br>
+<!-- <span title="$fulldesc">$description</span><br> -->
+|;
+	
+}
+close(OUT);
+
+open(OUT, ">/home/neuro/host/neuro.me.uk/tivo/showlist.inc");
+
+print OUT qq|<p>Last updated: $thedate</p>|;
+
+foreach $show (@shows) {
+	@columns = $show =~ /<TD>(.*?)<\/TD>/sig;
+	
+	# Status
+	if ($columns[0] eq "&nbsp;") {
+		$status = "New";
+	} elsif ($columns[0] =~ /ExpireNever/) {
+		$status = "Never Delete";
+	} elsif ($columns[0] =~ /Recording/) {
+		$status = "Recording";
+	} elsif ($columns[0] =~ /Suggest/) {
+		$status = "Suggestion";
+	} elsif ($columns[0] =~ /Expired/) {
+		$status = "Expired";
+	} else {
+		$status = "";
+	}
+
+	$status = lc($status);
+	
+	# Show Name
+	$columns[1] =~ s/<.*?>//g;
+	$showname = $columns[1];
+	
+	# Description
+	($description) = $columns[2] =~ /A title="(.*?)"/i;
+	
+	# Episode Name
+	$columns[2] =~ s/<.*?>//g;
+	$episodename = $columns[2];
+	if ( $episodename eq "No Episode Title" || $episodename eq "Not an Episode" ) {
+		$episodename = ""; 
+	} else { 
+		$episodename = "&mdash; \"$episodename\""; 
+	}
+	
+	# Day
+	$columns[3] =~ s/<.*?>//g;
+	$day = lc($columns[3]);
+	
+	# Date
+	$columns[4] =~ s/<.*?>//g;
+	$date = lc($columns[4]);
+	$date =~ s/^\s+//g;
+
+	$fulldesc = $description;
+	
+	print OUT qq|<em>$showname</em> $episodename ($day $date|;
+	if ( $status ne "" ) { print OUT qq|, $status|; }
+	print OUT qq|)<blockquote>
+<span title="$fulldesc">$description</span></blockquote>
+|;
+	
+}
+close(OUT);
+
+sub leave() {
+	open(OUT, ">/home/neuro/host/neuro.me.uk/blogsupport/showlist");
+	print OUT qq|<p>[oops &mdash; couldn't talk to the TiVo.]</p>|;
+	close(OUT);
+	open(OUT, ">/home/neuro/host/neuro.me.uk/tivo/showlist.inc");
+	print OUT qq|<p>[oops &mdash; couldn't talk to the TiVo.]</p>|;
+	close(OUT);
+	exit;
+}

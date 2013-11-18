@@ -1,0 +1,5 @@
+#!/bin/sh
+
+muh -d /home/neuro/.muh-freenode/
+muh -d /home/neuro/.muh-smoothwall/
+

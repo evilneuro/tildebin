@@ -1,0 +1,23 @@
+#!/bin/sh
+
+http_proxy=""
+STATIONS="`curl -s http://dab.zensoft.net:8080/index.htm | grep m3u | cut -d'<' -f10 | wc -l`"
+
+echo $STATIONS
+
+STATION=0
+while [ $STATION -lt $STATIONS ]
+do
+	STATION=`expr $STATION + 1`
+	THIS_STATION="`curl -s http://dab.zensoft.net:8080/index.htm | grep m3u | cut -d'<' -f10 | tail -n +$STATION | head -1`"
+	THIS_MULTIPLEX="`curl -s http://dab.zensoft.net:8080/index.htm | grep m3u | cut -d'<' -f17 | cut -d'>' -f2 | tail -n +$STATION | head -1`"
+	STATION_M3U=`echo $THIS_STATION | cut -d"\"" -f2`
+	STATION_MP2=`basename $STATION_M3U .m3u`.mp2
+	STATION_NAM="`echo $THIS_STATION | cut -d'>' -f2`"
+	echo $STATION_MP2 / $THIS_MULTIPLEX
+	cat << EOM >> "/store/music/playlists/Radio Stations/DAB; $STATION_NAM ($THIS_MULTIPLEX).m3u"
+#EXTM3
+#EXTINF:-1,$STATION_NAM
+http://dab.zensoft.net:8080/$STATION_MP2
+EOM
+done

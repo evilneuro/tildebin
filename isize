@@ -1,0 +1,121 @@
+#!/usr/bin/perl --
+
+# File: isize.pl         Date: Feb 8, 1995
+# Author: Marcus E. Hennecke <marcush@leland.stanford.edu>
+# <URL:ftp://ftp.crc.ricoh.com/pub/www/jsize.pl>
+# Code based in part on rdjpgcom.c by Tom Lane <tgl@netcom.com>
+
+# isize [file1 [file2 [...]]]
+
+# This is a little hack to determine the width and height in pixels of
+# a JPEG or GIF image. It is a hack because it assumes that certain
+# JPEG markers are not used. This should really cause no problems,
+# however.
+
+# If you specify more than one file on the command line (i.e. by using
+# wildcards), isize will print the filenames before the widths and
+# heights. Thus, one can easily determine the sizes af all images in a
+# directory. The output format is suitable for copying and pasting
+# directly into the IMG tag of HTML documents.
+
+# Typical uses:
+
+# isize *.gif *.jpg
+# isize *
+
+# -------------------------------------------------------------------
+
+# Define marker types
+$M_SOF0  = pack('C',0xC0);        $M_SOF3  = pack('C',0xC3);
+$M_SOI   = pack('C',0xD8);        $M_EOI   = pack('C',0xD9);
+$M_SOS   = pack('C',0xDA);        $M_COM   = pack('C',0xFE);
+$FF      = pack('C',0xFF);
+
+unshift(@ARGV, '-') if $#ARGV < $[; # Use stdin if no file name given
+$fn_flag = ($#ARGV > $[);
+
+while ( $ARGV = shift ) {       # Go over all file names
+
+    eval {
+        open(IN,"<$ARGV") || die "Couldn't open file!\n";
+
+        # Check the first two bytes to see if this is a JPEG file
+        $c1 = &read_1_byte;
+        $c2 = &read_1_byte;
+        if ( $c1 eq $FF && $c2 eq $M_SOI ) {
+            # Appears to be a JPEG file
+
+            # Go through the markers in the header. Stop when height
+            # and width are determined or when end of header is
+            # reached.
+            while ( 1==1 ) {
+                # Get the next marker
+                $db = 0; $c1 = &read_1_byte;
+                while ( $c1 ne $FF ) {
+                    $db++; $c1 = &read_1_byte;
+                };
+                $c1 = &read_1_byte while ( $c1 eq $FF );
+                $db && die "Garbage data found in JPEG file\n";
+
+                # What type marker are we looking at?
+                # Note that this first if statement is actually not
+                # quite correct. It does not check for the markers
+                # SOF4 and up. However, those markers are only used in
+                # cases where arithmetic and/or hierarchical coding
+                # are used. None of these cases are likely to become
+                # common.
+
+                # Do we have width and height yet?
+                if ( $c1 ge $M_SOF0 && $c1 le $M_SOF3 ) {
+                    ($l,$d,$height,$width) =
+                        unpack("SCSS",&read_n_bytes(7));
+                    last;
+                }
+                # Or have we reached the end of the header?
+                elsif ( $c1 eq $M_SOS || $c1 eq $M_EOI ) {
+                    die "Found no width or height!\n";
+                }
+                # Otherwise, skip this variable
+                else {  
+                    $l = unpack("S",&read_n_bytes(2)) - 2;
+                    ($l < 0 ) && die "Erroneous JPEG marker length!\n";
+                    &read_n_bytes($l);
+                };
+            }; # while ( 1==1 )
+        } else {
+            # Could it be a GIF file? Check magic marker and read in
+            # width and height at the same time.
+            ($magic,$width,$height) = unpack('a4vv',&read_n_bytes(8));
+            $magic = "$c1$c2$magic";
+            if ( $magic ne "GIF87a" && $magic ne "GIF89a" ) {
+                die "Neither JPEG nor GIF file!\n";
+            };
+        }; # if ( $c1 || $c2 )
+    }; # eval
+
+    # Print out result.
+    $prefix = "$ARGV:\t " if ( $fn_flag );
+    if ( $@ ) {
+        print STDERR "$prefix$@";
+    } else {
+        print "${prefix}width=$width height=$height\n";
+    };
+    close(IN);
+};
+
+# Reads one byte. If EOF is reached, terminates with an error message.
+sub read_1_byte {
+    local($ch);
+    ($ch = getc(IN)) || die "Premature EOF in image file!\n";
+    $ch;
+};
+
+# Reads N bytes. If EOF is reached, terminates with an error message.
+sub read_n_bytes {
+    local($n) = @_;
+    local($ch);
+    read(IN,$ch,$n) == $n || die "Premature EOF in image file!\n";
+    $ch;
+};
+
+

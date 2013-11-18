@@ -1,0 +1,44 @@
+#! /usr/bin/perl -w
+#
+# $Id: ext3-tuner 585 2005-12-05 22:45:42Z mark $
+# 
+# Apply tuning params to ext3 filesystems.
+
+# Find all filesystems of type ext3
+# run tunefs on those filesystems.
+
+use strict;
+use Getopt::Long;
+
+my $debug = 0;
+
+GetOptions('debug' => \$debug);
+
+if ($debug)
+{
+	warn "Debugging enabled.";
+}
+my @tunefs = ('tune2fs', '-c0', '-i0');
+open(FSTAB, "< /etc/fstab");
+
+my $line;
+while($line = <FSTAB>)
+{
+	next if ($line =~ m/^#/);
+	my ($dev, $dir, $type, $opts, $rest) = split(/\s+/, $line);
+	# $type can be undef if there is a blank line in the fstab
+	if ($type and $type eq "ext3")
+	{
+		# -b tests for block device files
+		if ( -b $dev )
+		{
+			# push(@tunefs, $dev);
+			if ($debug)
+			{
+				warn join(' ', (@tunefs, $dev));
+			}
+			system((@tunefs, $dev)) == 0
+				or die "tune2fs failed!";
+		}
+	}
+}
