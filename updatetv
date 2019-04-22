@@ -1,9 +1,0 @@
-#!/bin/sh
-
-# wget -nc -q -O - "http://minkutils.zensoft.net/feeds/bleep/index.php?force_update=1" >/dev/null
-
-mkdir -p ~/host/neuro.me.uk/tv/feeds/
-cd ~/host/neuro.me.uk/tv/feeds/
-
-curl -s "http://www.mininova.org/searchrss.php?search=the+colbert+report" | sed 's/mininova.org\/tor\//mininova.org\/get\//g' > colbert.rss
-curl -s "http://www.mininova.org/searchrss.php?search=the+daily+show" | sed 's/mininova.org\/tor\//mininova.org\/get\//g' > dailyshow.rss

@@ -1,30 +1,19 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-if [ $# -lt 1 ] 
+if [ $# -lt 1 ]; then echo "$(basename ${0}): need IP address to check" >&2; exit 1; fi
+
+CMD_JQ=$(which jq)
+CMD_CURL=$(which curl)
+
+if [ ! "${CMD_JQ}" ]; then echo "$(basename ${0}): need 'jq' to parse check results" >&2; exit 1; fi
+
+IPADDRESS=${1}
+COUNTRY=$(${CMD_CURL} -s --connect-timeout 5 https://ipinfo.io/${IPADDRESS} 2>/dev/null | ${CMD_JQ} -r '.country' | tr '[:upper:]' '[:lower:]' | grep -v ^null)
+if [ "${COUNTRY}" = "" ]
 then
-	echo "`basename $0`: need IP address to check"
-	exit 2
-fi
-
-# -d flag?
-# [root@intrepid ~]# host -t a sony.ro
-# sony.ro has address 195.2.39.183
-# [root@intrepid ~]# host -t a sony.rp
-# Host sony.rp not found: 3(NXDOMAIN)
-
-IPADDRESS=$1
-LOOKUPIP=`echo $IPADDRESS|cut -d. -f4`.`echo $IPADDRESS|cut -d. -f3`.`echo $IPADDRESS|cut -d. -f2`.`echo $IPADDRESS|cut -d. -f1`
-
-COUNTRY=`host -t any $LOOKUPIP.zz.countries.nerd.dk | grep "alias for" | cut -d" " -f6- | cut -dz -f3- | cut -d. -f1`
-if [ "$COUNTRY" = "" ]
-then
-	COUNTRY=`host -t any $LOOKUPIP.zz.countries.nerd.dk | grep " text " | cut -f2 -d\"`
-fi
-if [ "$COUNTRY" = "" ]
-then
-	echo "`basename $0`: Couldn't find country for IP $IPADDRESS"
+	echo "$(basename ${0}): Couldn't find country for IP ${IPADDRESS}"
 	exit 1
 else
-	echo $COUNTRY
+	echo ${COUNTRY}
 	exit 0
 fi

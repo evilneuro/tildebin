@@ -1,8 +1,28 @@
-#!/usr/bin/perl
+#!/usr/bin/env bash
 
-use Time::Local;
-use POSIX qw(strftime);
+if [ $# -le 0 ]; then echo "$(basename ${0}): no UNIX timestamp given" >&2; exit 1; fi
 
-$timestamp = shift;
+CMD_DATE=$(which date)
 
-print strftime("%Y-%m-%d %H:%M:%S", gmtime($timestamp)) . "\n";
+if [ "$(which brew)" ]
+then
+    HOMEBREW_PREFIX="$(brew config | grep ^HOMEBREW_PREFIX | awk '{print $2}')"
+    BREW_DATE=${HOMEBREW_PREFIX}/opt/coreutils/libexec/gnubin/date
+    if [ -s ${BREW_DATE} ]; then CMD_DATE=${BREW_DATE}; fi
+fi
+
+GNU_DATE_DETECT="$(${CMD_DATE} --version 2>&1 | head -1 | grep 'GNU coreutils')"
+
+if [ ! "${GNU_DATE_DETECT}" ]
+then
+    if [ "$(uname -s | grep Darwin)" ]
+    then
+        # shellcheck disable=SC2068
+        ${CMD_DATE} -j -f "%s" ${@}
+    else
+        echo "$(basename ${0}): need GNU date to operate correctly" >&2; exit 1
+    fi
+else
+    # shellcheck disable=SC2145
+    ${CMD_DATE} --date "@${@}"
+fi

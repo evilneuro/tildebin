@@ -1,8 +1,26 @@
-#!/usr/bin/perl
+#!/usr/bin/env bash
 
-use Time::Local;
-use Date::Manip;
+CMD_DATE=$(which date)
 
-$timestamp = shift;
+if [ "$(which brew)" ]
+then
+    HOMEBREW_PREFIX="$(brew config | grep ^HOMEBREW_PREFIX | awk '{print $2}')"
+    BREW_DATE=${HOMEBREW_PREFIX}/opt/coreutils/libexec/gnubin/date
+    if [ -s ${BREW_DATE} ]; then CMD_DATE=${BREW_DATE}; fi
+fi
 
-print UnixDate($timestamp,"%s") . "\n";
+GNU_DATE_DETECT="$(${CMD_DATE} --version 2>&1 | head -1 | grep 'GNU coreutils')"
+
+if [ ! "${GNU_DATE_DETECT}" ] && [ "${BREW_DATE}" ]
+then
+    echo "$(basename ${0}): install 'coreutils' homebrew package to use GNU date" >&2
+    exit 1
+elif [ ! "${GNU_DATE_DETECT}" ]
+then
+    echo "$(basename ${0}): need GNU date to operate correctly" >&2
+    exit 1
+fi
+
+# shellcheck disable=SC2124
+REQUESTED_DATE="${@}"
+${CMD_DATE} --date="${REQUESTED_DATE}" +"%s"
