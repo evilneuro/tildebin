@@ -6,7 +6,7 @@ CMD_DATE=$(which date)
 
 if [ "$(which brew)" ]
 then
-    HOMEBREW_PREFIX="$(brew config | grep ^HOMEBREW_PREFIX | awk '{print $2}')"
+    HOMEBREW_PREFIX="$(brew --prefix)"
     BREW_DATE=${HOMEBREW_PREFIX}/opt/coreutils/libexec/gnubin/date
     if [ -s ${BREW_DATE} ]; then CMD_DATE=${BREW_DATE}; fi
 fi
